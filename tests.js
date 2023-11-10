@@ -41,39 +41,44 @@ router.get("/get/:id", (req, res) => {
 });
 
 router.post("/add", upload.none(), (req, res) => {
+  console.log("this has to be triggered");
   const {
     test_name,
     requirements = null,
-    price,
-    method,
+    price = 0,
+    method = null,
     discipline,
     nabl_status,
-    units = null,
     sub_group,
-    additional_info,
+    additional_info = null,
   } = req.body;
 
-  pool.query(
-    "INSERT INTO test (test_name, requirements,price,method,discipline,nabl_status,units,sub_group,additional_info) VALUES (?, ?,?,?,?, ?,?,?,?)",
-    [
-      test_name,
-      requirements,
-      parseInt(price),
-      method,
-      discipline,
-      JSON.parse(nabl_status),
-      units,
-      parseInt(sub_group),
-      additional_info,
-    ],
-    (err, result) => {
-      if (err) {
-        console.error("Error inserting materials :", err);
-        return res.status(500).json({ error: "Internal server error" });
+  try {
+    pool.query(
+      "INSERT INTO test (test_name, requirements,price,method,discipline,nabl_status,sub_group,additional_info) VALUES ( ?,?,?,?, ?,?,?,?)",
+      [
+        test_name,
+        requirements,
+        parseInt(price),
+        method,
+        discipline,
+        JSON.parse(nabl_status),
+        parseInt(sub_group),
+        additional_info,
+      ],
+      (err, result) => {
+        if (err) {
+          console.error("Error inserting materials :", err);
+          return res.status(500).json({ error: "Internal server error" });
+        } else {
+          res.status(201).json({ message: "Test added successfully" });
+        }
       }
-      res.status(201).json({ message: "Material group added successfully" });
-    }
-  );
+    );
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 module.exports = router;

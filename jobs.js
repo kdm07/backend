@@ -19,18 +19,21 @@ router.post("/submit/:jobId", upload.none(), (request, response) => {
   const jobId = request.params.jobId;
   const data = request.body;
   const { value, result } = data;
-
-  const sqlQuery =
-    "update material_test set status='FINISHED',submitted_on=?, test_result = ?, test_details = ? where id = ?";
-  const queryValues = [new Date(), value, result, jobId];
-  pool.query(sqlQuery, queryValues, (err, result) => {
-    if (err) {
-      console.log(err);
-      response.status(500).send({ err_message: "Internal server error" });
-    } else {
-      response.status(200).send({ message: "jobs submitted successfully" });
-    }
-  });
+  try {
+    const sqlQuery =
+      "update material_test set status='FINISHED',submitted_on=?, test_result = ?, test_details = ? where id = ?";
+    const queryValues = [new Date(), value, result, jobId];
+    pool.query(sqlQuery, queryValues, (err, result) => {
+      if (err) {
+        console.log(err);
+        response.status(500).send({ err_message: "Internal server error" });
+      } else {
+        response.status(200).send({ message: "jobs submitted successfully" });
+      }
+    });
+  } catch (e) {
+    response.status(500).send({ err_message: "Internal server error" });
+  }
 });
 
 //redundant route
