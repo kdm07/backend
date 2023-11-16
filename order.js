@@ -13,7 +13,7 @@ const router = express.Router();
 const pool = createPool({
   user: "root",
   host: "localhost",
-  password: "keka@3061",
+  password: "uday0403",
   connectionLimit: 10,
   database: "lims",
 });
@@ -299,9 +299,9 @@ router.get("/:orderId", async (req, res) => {
     const finalResult = await Promise.all(
       sampleMaterials.map(async (eachSample) => {
         const beforeAssign =
-          "select  mt.test_id,mt.test_result,mt.submitted_on,t.nabl_status,mt.status,mt.assign_to as assignedTo ,t.test_name as testName,t.discipline from material_test mt join test t on t.id = mt.test_id where mt.sample_id = ?";
+          "select  mt.test_id,mt.test_result,mt.submitted_on,t.nabl_status,mt.status,mt.assign_to as assignedTo,t.test_limits ,t.test_name as testName,t.discipline from material_test mt join test t on t.id = mt.test_id where mt.sample_id = ?";
         const afterAssign =
-          "select mt.test_id,mt.test_result,mt.submitted_on,t.nabl_status,mt.status,mt.assign_to as assignedTo ,t.test_name as testName,t.discipline,t.id as testId,e.profile_image as empImage from material_test mt join test t on t.id = mt.test_id join employee e on e.emp_id = mt.assign_to   where mt.sample_id = ?";
+          "select mt.test_id,mt.test_result,mt.submitted_on,t.nabl_status,mt.status,mt.assign_to as assignedTo,t.test_limits ,t.test_name as testName,t.discipline,t.id as testId,e.profile_image as empImage from material_test mt join test t on t.id = mt.test_id join employee e on e.emp_id = mt.assign_to   where mt.sample_id = ?";
         const tests = await query(
           order.status === "ASSIGNED" ? afterAssign : beforeAssign,
           [eachSample.sample_id]

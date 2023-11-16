@@ -6,7 +6,7 @@ const router = express.Router();
 const pool = createPool({
   user: "root",
   host: "localhost",
-  password: "keka@3061",
+  password: "uday0403",
   connectionLimit: 10,
   database: "lims",
 });
