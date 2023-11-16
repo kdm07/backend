@@ -13,7 +13,7 @@ const router = express.Router();
 const pool = createPool({
   user: "root",
   host: "localhost",
-  password: "uday0403",
+  password: "keka@3061",
   connectionLimit: 10,
   database: "lims",
 });
@@ -191,16 +191,17 @@ async function insertOrUpdateMaterials(connection, orderData, orderId) {
   const materials = JSON.parse(orderData.testData);
   const materialResults = [];
   for (const material of materials) {
-    const { sampleId, subgroupId, materialSource, quantity, units } = material;
+    const { sampleId, subgroupId, materialSource, quantity, units, ref } =
+      material;
     const sqlQuery =
-      "INSERT INTO order_material (order_id, sample_id, subgroup,source,quantity,units) VALUES (?,?,?,?,?,?)";
+      "INSERT INTO order_material (order_id, sample_id, subgroup,source,quantity,job_number) VALUES (?,?,?,?,?,?)";
     const queryValues = [
       orderId,
       sampleId,
       subgroupId,
       materialSource,
       quantity,
-      units,
+      ref,
     ];
 
     const result = await util
@@ -325,5 +326,47 @@ router.get("/:orderId", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+router.get(
+  "/get/customer_subgroup_tests_orderNo",
+  async (request, response) => {
+    const connection = await util.promisify(pool.getConnection).call(pool);
+    try {
+      await util.promisify(connection.beginTransaction).call(connection);
+
+      const getCustomers = `select * from customer`;
+      const getTests = `select * from test`;
+      const getSubgroups = `select * from subgroup`;
+      const getCount = "SELECT COUNT(order_id) as c FROM orders";
+
+      const customers = await util
+        .promisify(connection.query)
+        .call(connection, getCustomers);
+
+      const tests = await util
+        .promisify(connection.query)
+        .call(connection, getTests);
+
+      const subGroups = await util
+        .promisify(connection.query)
+        .call(connection, getSubgroups);
+
+      const count = await util
+        .promisify(connection.query)
+        .call(connection, getCount);
+
+      c = count[0].c;
+
+      await util.promisify(connection.commit).call(connection);
+      connection.release();
+      response.status(200).send({ customers, subGroups, tests, c });
+    } catch (err) {
+      console.log(err);
+      await util.promisify(connection.rollback).call(connection);
+      connection.release();
+      response.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
 
 module.exports = router;

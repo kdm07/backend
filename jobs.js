@@ -11,7 +11,7 @@ const upload = multer({ storage: storage });
 const pool = createPool({
   user: "root",
   host: "localhost",
-  password: "uday0403",
+  password: "keka@3061",
   connectionLimit: 10,
   database: "lims",
 });
@@ -113,7 +113,7 @@ router.get("/myJobs/:sId/:tId", verifyToken, async (request, response) => {
 
     const empId = rows[0].emp_id;
 
-    const jobsQuery = `select o.due_date,mt.sample_id,om.subgroup as subgroup_id,o.project_name,o.assigned_on,mt.test_id,mt.id as job_id,mt.status,s.name,t.test_name from material_test mt join order_material om on om.sample_id = mt.sample_id join orders o on o.order_id = om.order_id join test t on mt.test_id = t.id join subgroup s on s.id = om.subgroup  where assign_to = ? and mt.sample_id = ? and mt.test_id = ?`;
+    const jobsQuery = `select o.due_date,mt.sample_id,om.job_number,om.subgroup as subgroup_id,o.project_name,o.assigned_on,mt.test_id,mt.id as job_id,mt.status,s.name,t.test_name from material_test mt join order_material om on om.sample_id = mt.sample_id join orders o on o.order_id = om.order_id join test t on mt.test_id = t.id join subgroup s on s.id = om.subgroup  where assign_to = ? and mt.sample_id = ? and mt.test_id = ?`;
 
     const jobs = await util
       .promisify(connection.query)
@@ -139,7 +139,7 @@ router.get("/myJobs", verifyToken, async (request, response) => {
 
     const empId = rows[0].emp_id;
 
-    const jobsQuery = `select o.due_date,mt.sample_id,mt.test_id,mt.status,s.name,t.test_name from material_test mt join order_material om on om.sample_id = mt.sample_id join orders o on o.order_id = om.order_id join test t on mt.test_id = t.id join subgroup s on s.id = om.subgroup  where assign_to = ? order by o.assigned_on asc, mt.status desc`;
+    const jobsQuery = `select o.due_date,mt.sample_id,om.job_number,mt.test_id,mt.status,s.name,t.test_name from material_test mt join order_material om on om.sample_id = mt.sample_id join orders o on o.order_id = om.order_id join test t on mt.test_id = t.id join subgroup s on s.id = om.subgroup  where assign_to = ? order by o.assigned_on asc, mt.status desc`;
 
     const jobs = await util
       .promisify(connection.query)
