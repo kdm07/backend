@@ -1,15 +1,8 @@
 const express = require("express");
 
-const { createPool } = require("mysql");
 const router = express.Router();
 
-const pool = createPool({
-  user: "root",
-  host: "localhost",
-  password: "keka@3061",
-  connectionLimit: 10,
-  database: "lims",
-});
+const pool = require("./config");
 
 router.get("", (req, res) => {
   pool.query("SELECT * FROM material_groups", (err, results) => {

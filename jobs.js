@@ -1,20 +1,13 @@
 const express = require("express");
-const { createPool } = require("mysql");
+
 const util = require("util");
 const router = express.Router();
 const verifyToken = require("./verifyToken");
 const multer = require("multer");
+const pool = require("./config");
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-
-const pool = createPool({
-  user: "root",
-  host: "localhost",
-  password: "keka@3061",
-  connectionLimit: 10,
-  database: "lims",
-});
 
 router.get("/getRes/:sId/:tId", (request, response) => {
   const tId = request.params.tId;
@@ -34,6 +27,25 @@ router.get("/getRes/:sId/:tId", (request, response) => {
   }
 });
 
+router.put("/reject/:sId/:tId", upload.none(), async (request, response) => {
+  const sId = request.params.sId;
+  const tId = request.params.tId;
+  try {
+    const rejectQuery = `update  material_test set status = ? where sample_id = ? and test_id = ?`;
+    pool.query(rejectQuery, ["REJECTED", sId, tId], (err, succ) => {
+      if (err) {
+        return response
+          .status(500)
+          .send({ err_message: "Failed to Reject the job" });
+      } else {
+        return response.status(200).send("Job Rejected successfully");
+      }
+    });
+  } catch (err) {
+    response.status(500).send({ err_message: "Internal server error" });
+  }
+});
+
 router.put("/finalize/:sId/:tId", upload.none(), (request, response) => {
   const tId = request.params.tId;
   const sId = request.params.sId;
@@ -41,14 +53,18 @@ router.put("/finalize/:sId/:tId", upload.none(), (request, response) => {
   try {
     pool.query(query, ["ACCEPTED", sId, tId], (err, testRes) => {
       if (err) {
-        response.status(500).send({ err_message: "Internal server error" });
+        return response
+          .status(500)
+          .send({ err_message: "Internal server error" });
       } else {
-        response.status(200).send({ message: "Test results are finalised" });
+        return response
+          .status(200)
+          .send({ message: "Test results are finalised" });
       }
     });
   } catch (err) {
     console.log(err);
-    response.status(500).send({ err_message: "Internal server error" });
+    return response.status(500).send({ err_message: "Internal server error" });
   }
 });
 
@@ -64,14 +80,18 @@ router.post("/submit/:sId/:tId", upload.none(), (request, response) => {
     pool.query(sqlQuery, queryValues, (err, result) => {
       if (err) {
         console.log(err);
-        response.status(500).send({ err_message: "Internal server error" });
+        return response
+          .status(500)
+          .send({ err_message: "Internal server error" });
       } else {
-        response.status(200).send({ message: "jobs submitted successfully" });
+        return response
+          .status(200)
+          .send({ message: "jobs submitted successfully" });
       }
     });
   } catch (e) {
     console.log(e);
-    response.status(500).send({ err_message: "Internal server error" });
+    return response.status(500).send({ err_message: "Internal server error" });
   }
 });
 
@@ -139,7 +159,7 @@ router.get("/myJobs", verifyToken, async (request, response) => {
 
     const empId = rows[0].emp_id;
 
-    const jobsQuery = `select o.due_date,mt.sample_id,om.job_number,mt.test_id,mt.status,s.name,t.test_name from material_test mt join order_material om on om.sample_id = mt.sample_id join orders o on o.order_id = om.order_id join test t on mt.test_id = t.id join subgroup s on s.id = om.subgroup  where assign_to = ? order by o.assigned_on asc, mt.status desc`;
+    const jobsQuery = `select o.due_date,o.assigned_on,mt.sample_id,om.job_number,mt.test_id,mt.status,s.name,t.test_name from material_test mt join order_material om on om.sample_id = mt.sample_id join orders o on o.order_id = om.order_id join test t on mt.test_id = t.id join subgroup s on s.id = om.subgroup  where assign_to = ? order by o.assigned_on asc, mt.status desc`;
 
     const jobs = await util
       .promisify(connection.query)

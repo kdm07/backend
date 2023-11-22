@@ -1,19 +1,10 @@
 const express = require("express");
 const multer = require("multer");
-const fs = require("fs");
-const path = require("path");
-const { createPool } = require("mysql");
 const router = express.Router();
-
-const pool = createPool({
-  user: "root",
-  host: "localhost",
-  password: "keka@3061",
-  connectionLimit: 10,
-  database: "lims",
-});
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+
+const pool = require("./config");
 
 router.get("", (req, res) => {
   pool.query("SELECT * FROM subgroup", (err, results) => {
@@ -28,7 +19,6 @@ router.get("", (req, res) => {
 
 router.get("/get/:id", (req, res) => {
   const id = req.params.id;
-
   pool.query(`SELECT * FROM subgroup where id = ${id}`, (err, results) => {
     if (err) {
       console.error("Error executing SQL query:", err);

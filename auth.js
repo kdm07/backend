@@ -7,8 +7,6 @@ const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-const { KDM_ACCESS_TOKEN } = require("./constants");
-
 const pool = createPool({
   user: "root",
   host: "localhost",

@@ -2,25 +2,11 @@ const express = require("express");
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
-const { createPool } = require("mysql");
 const util = require("util");
-
-const { PENDING_FOR_REVIEW } = require("./constants");
-const verifyToken = require("./verifyToken");
-
+const pool = require("./config");
 const router = express.Router();
-
-const pool = createPool({
-  user: "root",
-  host: "localhost",
-  password: "keka@3061",
-  connectionLimit: 10,
-  database: "lims",
-});
-
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-
 const writeFileAsync = util.promisify(fs.writeFile);
 
 function createOrderDirectory(orderId) {
@@ -48,15 +34,17 @@ async function saveOrUpdateOrder(req, res, id) {
     connection.release();
 
     if (id) {
-      res.status(200).json({ message: "Order data updated successfully" });
+      return res
+        .status(200)
+        .json({ message: "Order data updated successfully" });
     } else {
-      res.status(200).json({ message: "Order data saved successfully" });
+      return res.status(200).json({ message: "Order data saved successfully" });
     }
   } catch (error) {
     console.log(error);
     await util.promisify(connection.rollback).call(connection);
     connection.release();
-    res.status(500).json({ error_msg: "Internal server error" });
+    return res.status(500).json({ error_msg: "Internal server error" });
   }
 }
 
@@ -88,11 +76,11 @@ router.post("/assign/:orderId", upload.none(), async (request, response) => {
 
     await util.promisify(connection.commit).call(connection);
     connection.release();
-    response.status(200).json({ message: "Jobs created successfully" });
+    return response.status(200).json({ message: "Jobs created successfully" });
   } catch (error) {
     await util.promisify(connection.rollback).call(connection);
     connection.release();
-    res.status(500).json({ error_msg: "Internal server error" });
+    return res.status(500).json({ error_msg: "Internal server error" });
   }
 });
 
@@ -106,6 +94,7 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
     transport_fee,
     due_date,
     customer_id,
+    order_number,
     PENDING_FOR_REVIEW,
   } = orderData;
 
@@ -151,8 +140,9 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
       due_date,
       registration_date,
       customer_id,
-      status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)`;
+      status,
+      order_number
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)`;
 
   const queryValues = id
     ? [
@@ -167,6 +157,7 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
         new Date(),
         customer_id,
         PENDING_FOR_REVIEW,
+        order_number,
       ]
     : [
         order_id,
@@ -180,6 +171,7 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
         new Date(),
         customer_id,
         "PENDING_FOR_REVIEW",
+        order_number,
       ];
 
   return await util
@@ -243,28 +235,31 @@ router.get("", (req, res) => {
   const sqlQuery = `
     SELECT * FROM orders order by due_date asc
   `;
-  pool.query(sqlQuery, (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: "Database error" });
-    }
+  try {
+    pool.query(sqlQuery, (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: "Database error" });
+      }
 
-    const formattedOrders = results.map((each) => {
-      return {
-        order_id: each.order_id,
-        project_name: each.project_name,
-        due_date: each.due_date.toISOString().split("T")[0],
-        customer_id: each.customer_id,
-        status: each.status,
-      };
+      const formattedOrders = results.map((each) => {
+        return {
+          order_id: each.order_id,
+          project_name: each.project_name,
+          due_date: each.due_date.toISOString().split("T")[0],
+          customer_id: each.customer_id,
+          status: each.status,
+        };
+      });
+
+      return res.status(200).json(formattedOrders);
     });
-
-    res.status(200).json(formattedOrders);
-  });
+  } catch (err) {
+    return res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 const query = util.promisify(pool.query).bind(pool);
 
-// Route to get order by ID with material and test details
 router.get("/:orderId", async (req, res) => {
   const orderId = req.params.orderId;
 
@@ -274,8 +269,7 @@ router.get("/:orderId", async (req, res) => {
     ]);
 
     if (orderQuery.length === 0) {
-      res.status(404).json({ error: "Order not found" });
-      return;
+      return res.status(404).json({ error: "Order not found" });
     }
 
     const order = orderQuery[0];
@@ -315,7 +309,7 @@ router.get("/:orderId", async (req, res) => {
       })
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       samples: finalResult,
       staffData: staffData,
       orderDetails: order,
@@ -323,7 +317,7 @@ router.get("/:orderId", async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -359,12 +353,12 @@ router.get(
 
       await util.promisify(connection.commit).call(connection);
       connection.release();
-      response.status(200).send({ customers, subGroups, tests, c });
+      return response.status(200).send({ customers, subGroups, tests, c });
     } catch (err) {
       console.log(err);
       await util.promisify(connection.rollback).call(connection);
       connection.release();
-      response.status(500).json({ error: "Internal server error" });
+      return response.status(500).json({ error: "Internal server error" });
     }
   }
 );

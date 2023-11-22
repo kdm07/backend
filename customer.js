@@ -2,17 +2,10 @@ const express = require("express");
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
-const { createPool } = require("mysql");
 const router = express.Router();
 const verifyToken = require("./verifyToken");
 
-const pool = createPool({
-  user: "root",
-  host: "localhost",
-  password: "keka@3061",
-  connectionLimit: 10,
-  database: "lims",
-});
+const pool = require("./config");
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
