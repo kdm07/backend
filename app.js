@@ -15,6 +15,7 @@ const test = require("./tests");
 const order = require("./order");
 const authRoute = require("./auth");
 const jobs = require("./jobs");
+const role = require("./roles");
 
 app.use("/employee", employeeRoutes);
 app.use("/customer", customerRoutes);
@@ -24,6 +25,7 @@ app.use("/test", test);
 app.use("/order", order);
 app.use("/auth", authRoute);
 app.use("/jobs", jobs);
+app.use("/role", role);
 // app.use("/roles", roles);
 
 app.listen(8081, () => {
