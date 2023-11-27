@@ -279,7 +279,7 @@ router.get("/:orderId", async (req, res) => {
     ]);
 
     const sampleMaterials = await query(
-      `SELECT  om.sample_id,sg.name as sampleName
+      `SELECT  om.source as source, om.sample_id,sg.name as sampleName,sg.tech_ref as requirements
       FROM order_material om
       JOIN subgroup sg ON sg.id = om.subgroup
       WHERE om.order_id = ?`,
