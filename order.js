@@ -69,6 +69,7 @@ router.post("/assign/:orderId", upload.none(), async (request, response) => {
       await new Promise((resolve, reject) => {
         connection.query(sql, values, (err, results) => {
           if (err) reject(err);
+          // console.log(results);
           resolve(results);
         });
       });
