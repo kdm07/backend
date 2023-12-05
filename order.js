@@ -223,6 +223,33 @@ async function insertOrUpdateTests(connection, orderData) {
   }
 }
 
+// async function insertOrUpdateTests(connection, orderData) {
+//   const materials = JSON.parse(orderData.testData);
+
+//   for (let i = 0; i < materials.length; i++) {
+//     const tests = materials[i].selectedTests;
+//     for (const test of tests) {
+//       const sqlQuery =
+//         "INSERT INTO material_test (sample_id, test_id, test_result) VALUES (?, ?, ?)";
+//       const queryValues = [
+//         materials[i].sampleId,
+//         test.testId,
+//         JSON.stringify({
+//           w: materials[i].w,
+//           x: materials[i].x,
+//           y: materials[i].y,
+//           z: materials[i].z,
+//         }),
+//       ];
+
+//       await util
+//         .promisify(connection.query)
+//         .call(connection, sqlQuery, queryValues);
+//     }
+//   }
+// }
+
+
 router.post("/add", upload.single("letter"), (req, res) => {
   saveOrUpdateOrder(req, res);
 });
@@ -280,7 +307,7 @@ router.get("/:orderId", async (req, res) => {
     ]);
 
     const sampleMaterials = await query(
-      `SELECT  om.source as source, om.sample_id,sg.name as sampleName,sg.tech_ref as requirements
+      `SELECT  om.quantity as qty , om.source as source, om.sample_id,sg.name as sampleName,sg.tech_ref as requirements
       FROM order_material om
       JOIN subgroup sg ON sg.id = om.subgroup
       WHERE om.order_id = ?`,

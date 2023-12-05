@@ -105,7 +105,7 @@ router.get("/review/:sId/:tId", async (request, response) => {
 
     await util.promisify(connection.beginTransaction).call(connection);
 
-    const jobsQuery = `select o.due_date,mt.sample_id,om.subgroup as subgroup_id,o.project_name,o.assigned_on,mt.test_id,mt.id as job_id,mt.status,s.name,t.test_name from material_test mt join order_material om on om.sample_id = mt.sample_id join orders o on o.order_id = om.order_id join test t on mt.test_id = t.id join subgroup s on s.id = om.subgroup  where mt.sample_id = ? and mt.test_id = ?`;
+    const jobsQuery = `select o.due_date,mt.sample_id,om.quantity as qty , om.subgroup as subgroup_id,o.project_name,o.assigned_on,mt.test_id,mt.id as job_id,mt.status,s.name,t.test_name from material_test mt join order_material om on om.sample_id = mt.sample_id join orders o on o.order_id = om.order_id join test t on mt.test_id = t.id join subgroup s on s.id = om.subgroup  where mt.sample_id = ? and mt.test_id = ?`;
 
     const jobs = await util
       .promisify(connection.query)
@@ -133,7 +133,7 @@ router.get("/myJobs/:sId/:tId", verifyToken, async (request, response) => {
 
     const empId = rows[0].emp_id;
 
-    const jobsQuery = `select o.due_date,mt.sample_id,om.job_number,om.subgroup as subgroup_id,o.project_name,o.assigned_on,mt.test_id,mt.id as job_id,mt.status,s.name,t.test_name from material_test mt join order_material om on om.sample_id = mt.sample_id join orders o on o.order_id = om.order_id join test t on mt.test_id = t.id join subgroup s on s.id = om.subgroup  where assign_to = ? and mt.sample_id = ? and mt.test_id = ?`;
+    const jobsQuery = `select o.due_date,mt.sample_id,om.job_number,om.quantity as qty ,om.subgroup as subgroup_id,o.project_name,o.assigned_on,mt.test_id,mt.id as job_id,mt.status,s.name,t.test_name from material_test mt join order_material om on om.sample_id = mt.sample_id join orders o on o.order_id = om.order_id join test t on mt.test_id = t.id join subgroup s on s.id = om.subgroup  where assign_to = ? and mt.sample_id = ? and mt.test_id = ?`;
 
     const jobs = await util
       .promisify(connection.query)
