@@ -8,6 +8,12 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 const { KDM_ACCESS_TOKEN } = require("./constants");
 const pool = require("./config");
+const {
+  verifyToken,
+  getEmployeeUsingId,
+  getEmployeeUsingUsername,
+} = require("./verifyToken");
+const applyLeave = require("./Controllers/applyLeave");
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -214,13 +220,15 @@ router.post("/add", employeeDocuments, async (request, res) => {
     (err, result) => {
       if (err) {
         console.log(err);
-        res.status(500).json({ error_msg: "Internal server error", err });
+        return res
+          .status(500)
+          .json({ error_msg: "Internal server error", err });
       } else {
         const payload = {
           username: last_name + emp_id,
         };
         const jwtToken = jwt.sign(payload, KDM_ACCESS_TOKEN);
-        res.status(200).json({
+        return res.status(200).json({
           message: "Employee and documents added successfully",
           jwtToken,
         });
@@ -397,49 +405,68 @@ router.get("", (req, res) => {
 //   });
 // });
 
-router.get("/get/:id", (req, res) => {
-  const { id } = req.params;
+// const getEmployeeProfile = async (id) => {
+//   const getEmployeeQuery = `SELECT
+//       CONCAT(e.first_name, ' ', e.last_name) AS emp_name,e.emp_id,e.mobile,e.personnel_mail AS email, e.address, e.additional_info,
+//         e.appointed_date,
+//         e.dob,
+//         e.salary,
+//         b.branch,
+//         CONCAT(s.first_name, ' ', s.last_name) AS supervisor,
+//         s.emp_id as supervisor_id,
+//         e.profile_image as profile_pic,
+//         s.profile_image as supervisor_pic,
+//         d.department as dept,
+//         r.role as role
+//       FROM
+//         employee e
+//       JOIN
+//         role r ON e.role = r.role_id
+//       JOIN
+//         department d ON d.dept_id = e.department
+//       JOIN
+//         branch b ON b.branch_id = e.branch
+//       LEFT JOIN
+//         employee s ON s.emp_id = e.supervisor
+//       WHERE
+//         e.emp_id = '${id}';`;
 
-  const getEmployeeQuery = `SELECT
-      CONCAT(e.first_name, ' ', e.last_name) AS emp_name,e.emp_id,e.mobile,e.personnel_mail AS email, e.address, e.additional_info,
-        e.appointed_date,
-        e.dob,
-        e.salary,
-        b.branch,
-        CONCAT(s.first_name, ' ', s.last_name) AS supervisor,
-        s.emp_id as supervisor_id,
-        e.profile_image as profile_pic,
-        s.profile_image as supervisor_pic,
-        d.department as dept,
-        r.role as role
-      FROM
-        employee e
-      JOIN
-        role r ON e.role = r.role_id
-      JOIN
-        department d ON d.dept_id = e.department
-      JOIN
-        branch b ON b.branch_id = e.branch
-      LEFT JOIN
-        employee s ON s.emp_id = e.supervisor
-      WHERE
-        e.emp_id = '${id}';`;
+//   return await new Promise((resolve, reject) => {
+//     pool.query(getEmployeeQuery, (err, result) => {
+//       if (err) {
+//         reject(err);
+//       } else {
+//         if (result.length > 0) {
+//           resolve(result[0]);
+//         } else {
+//           reject({ error: "Employee not found" });
+//         }
+//       }
+//     });
+//   });
+// };
 
-  pool.query(getEmployeeQuery, (err, result) => {
-    if (err) {
-      console.log(err);
-      res.status(500).json({ error: "Error fetching employee data" });
-    } else {
-      if (result.length > 0) {
-        res.status(200).json(result[0]);
-      } else {
-        res.status(404).json({ error: "Employee not found" });
-      }
-    }
-  });
+router.get("/myprofile", verifyToken, async (req, res) => {
+  try {
+    const { username } = req.user;
+    const profile = await getEmployeeUsingUsername(username);
+    return res.status(200).json(profile);
+  } catch (error) {
+    return res.status(500).json({ error: "Error fetching employee data" });
+  }
 });
 
-router.put("/update/:id", (req, res) => {
+router.get("/get/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const profile = await getEmployeeUsingId(id);
+    return res.status(200).json(profile);
+  } catch (error) {
+    return res.status(500).json({ error: "Error fetching employee data" });
+  }
+});
+
+router.put("/update/:id", upload.none(), (req, res) => {
   const { id } = req.params;
   const updatedEmployee = req.body;
 
@@ -522,6 +549,73 @@ router.get("/staff-dept-role", async (request, response) => {
     response.status(500).json("Failed to fetch data");
   }
 });
+
+// router.post(
+//   "/applyLeave",
+//   upload.none(),
+//   verifyToken,
+//   async (request, response) => {
+//     const username = request.user;
+//     const userDetails = await getUserDetails(username);
+//     const { fromDate, to, subject, body } = JSON.parse(request.body);
+//     try {
+//       const apply = await applyLeave(
+//         userDetails.emp_id,
+//         fromDate,
+//         to,
+//         subject,
+//         body,
+//         userDetails.supervisor
+//       );
+//     } catch (err) {
+//       console.log(err);
+//     }
+//   }
+// );
+
+router.post(
+  "/applyLeave",
+  upload.none(),
+  verifyToken,
+  async (request, response) => {
+    const { fromDate, to, subject, body } = JSON.parse(request.body);
+
+    try {
+      const userDetails = await getEmployeeUsingUsername(user);
+      const {
+        emp_id,
+        first_name,
+        last_name,
+        supervisor,
+        personnel_mail: mailFrom,
+      } = userDetails;
+      const reportorDetails = await getEmployeeUsingId(supervisor);
+      const { personnel_mail: mailTo } = reportorDetails;
+
+      await applyLeave(
+        emp_id,
+        fromDate,
+        to,
+        subject,
+        body,
+        userDetails.supervisor
+      );
+      const employeeFullname = first_name + " " + last_name;
+      conformingLeaveAppliedMail(
+        employeeFullname,
+        fromDate,
+        to,
+        mailTo,
+        mailFrom
+      );
+
+      response.status(200).json({ message: "Leave applied successfully" });
+    } catch (error) {
+      console.error("Error applying leave:", error);
+      response.status(500).json({ error: "Failed to apply leave" });
+    }
+  }
+);
 
 function executeQuery(query) {
   return new Promise((resolve, reject) => {

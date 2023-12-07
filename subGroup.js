@@ -6,6 +6,20 @@ const upload = multer({ storage: storage });
 
 const pool = require("./config");
 
+router.get("/scope", (req, res) => {
+  pool.query(
+    "SELECT s.name,t.test_name,t.price,t.method,t.nabl_status FROM subgroup s join test t on s.id = t.sub_group order by s.name asc",
+    (err, results) => {
+      if (err) {
+        console.error("Error executing SQL query:", err);
+        res.status(500).json({ error: "Internal server error" });
+      } else {
+        res.status(200).json(results);
+      }
+    }
+  );
+});
+
 router.get("", (req, res) => {
   pool.query("SELECT * FROM subgroup", (err, results) => {
     if (err) {

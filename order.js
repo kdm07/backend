@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const util = require("util");
 const pool = require("./config");
+const { orderConformationMail } = require("./sendMessage");
 const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -21,6 +22,7 @@ async function saveOrUpdateOrder(req, res, id) {
   const connection = await util.promisify(pool.getConnection).call(pool);
 
   try {
+    console.log(req.body);
     await util.promisify(connection.beginTransaction).call(connection);
 
     await insertOrUpdateOrder(connection, req.body, req.file, id);
@@ -29,10 +31,18 @@ async function saveOrUpdateOrder(req, res, id) {
 
     await insertOrUpdateTests(connection, req.body);
 
+    const customerResult = await getCustomerDetails(
+      connection,
+      req.body.customer_id
+    );
+
+    await orderConformationMail(
+      customerResult[0].email,
+      customerResult[0].reporting_name
+    );
+
     await util.promisify(connection.commit).call(connection);
-
     connection.release();
-
     if (id) {
       return res
         .status(200)
@@ -69,7 +79,6 @@ router.post("/assign/:orderId", upload.none(), async (request, response) => {
       await new Promise((resolve, reject) => {
         connection.query(sql, values, (err, results) => {
           if (err) reject(err);
-          // console.log(results);
           resolve(results);
         });
       });
@@ -84,6 +93,19 @@ router.post("/assign/:orderId", upload.none(), async (request, response) => {
     return res.status(500).json({ error_msg: "Internal server error" });
   }
 });
+
+async function getCustomerDetails(connection, customerId) {
+  try {
+    const getCustomerQuery = "SELECT * FROM customer WHERE id = ?";
+    const customerResult = await util
+      .promisify(connection.query)
+      .call(connection, getCustomerQuery, [customerId]);
+    return customerResult;
+  } catch (error) {
+    console.error("Error fetching customer details:", error);
+    throw error;
+  }
+}
 
 async function insertOrUpdateOrder(connection, orderData, file, id) {
   const {
@@ -172,6 +194,7 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
         new Date(),
         customer_id,
         "PENDING_FOR_REVIEW",
+
         order_number,
       ];
 
@@ -249,7 +272,6 @@ async function insertOrUpdateTests(connection, orderData) {
 //   }
 // }
 
-
 router.post("/add", upload.single("letter"), (req, res) => {
   saveOrUpdateOrder(req, res);
 });
@@ -261,16 +283,18 @@ router.put("/update/:id", upload.single("letter"), (req, res) => {
 
 router.get("", (req, res) => {
   const sqlQuery = `
-    SELECT * FROM orders order by due_date asc
+    SELECT * FROM orders order by order_number desc, due_date asc
   `;
   try {
     pool.query(sqlQuery, (err, results) => {
       if (err) {
+        console.log(err);
         return res.status(500).json({ error: "Database error" });
       }
 
       const formattedOrders = results.map((each) => {
         return {
+          order_number: each.order_number,
           order_id: each.order_id,
           project_name: each.project_name,
           due_date: each.due_date.toISOString().split("T")[0],
@@ -282,6 +306,7 @@ router.get("", (req, res) => {
       return res.status(200).json(formattedOrders);
     });
   } catch (err) {
+    console.log(err);
     return res.status(500).json({ error: "Internal server error" });
   }
 });

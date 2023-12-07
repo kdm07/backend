@@ -2,7 +2,7 @@ const express = require("express");
 
 const util = require("util");
 const router = express.Router();
-const verifyToken = require("./verifyToken");
+const { verifyToken } = require("./verifyToken");
 const multer = require("multer");
 const pool = require("./config");
 
@@ -16,14 +16,16 @@ router.get("/getRes/:sId/:tId", (request, response) => {
     const getTestQuery = `select * from material_test where sample_id = ? and test_id = ? `;
     pool.query(getTestQuery, [sId, tId], (err, testRes) => {
       if (err) {
-        response.status(500).send({ err_message: "Internal server error" });
+        return response
+          .status(500)
+          .send({ err_message: "Internal server error" });
       } else {
-        response.status(200).send(testRes[0]);
+        return response.status(200).send(testRes[0]);
       }
     });
   } catch (err) {
     console.log(err);
-    response.status(500).send({ err_message: "Internal server error" });
+    return response.status(500).send({ err_message: "Internal server error" });
   }
 });
 
@@ -42,7 +44,7 @@ router.put("/reject/:sId/:tId", upload.none(), async (request, response) => {
       }
     });
   } catch (err) {
-    response.status(500).send({ err_message: "Internal server error" });
+    return response.status(500).send({ err_message: "Internal server error" });
   }
 });
 
@@ -75,8 +77,8 @@ router.post("/submit/:sId/:tId", upload.none(), (request, response) => {
   const { value, result } = data;
   try {
     const sqlQuery =
-      "update material_test set status='FINISHED',submitted_on=?, test_result = ?, test_details = ? where sample_id = ? and test_id = ? ";
-    const queryValues = [new Date(), value, result, sId, tId];
+      "update material_test set status='FINISHED',submitted_on=?, test_result = ?, test_details = ? where sample_id = ? and test_id = ?";
+    const queryValues = [new Date(), parseFloat(value), result, sId, tId];
     pool.query(sqlQuery, queryValues, (err, result) => {
       if (err) {
         console.log(err);
@@ -90,13 +92,12 @@ router.post("/submit/:sId/:tId", upload.none(), (request, response) => {
       }
     });
   } catch (e) {
-    console.log(e);
+    console.log("catch");
     return response.status(500).send({ err_message: "Internal server error" });
   }
 });
 
 //redundant route
-
 router.get("/review/:sId/:tId", async (request, response) => {
   const { sId, tId } = request.params;
 
@@ -110,10 +111,10 @@ router.get("/review/:sId/:tId", async (request, response) => {
     const jobs = await util
       .promisify(connection.query)
       .call(connection, jobsQuery, [sId, tId]);
-    response.status(200).json(jobs[0]);
+    return response.status(200).json(jobs[0]);
   } catch (err) {
     console.log(err);
-    response.status(500).json({ err_message: "Internal server error" });
+    return response.status(500).json({ err_message: "Internal server error" });
   }
 });
 
@@ -138,10 +139,10 @@ router.get("/myJobs/:sId/:tId", verifyToken, async (request, response) => {
     const jobs = await util
       .promisify(connection.query)
       .call(connection, jobsQuery, [empId, sId, tId]);
-    response.status(200).json(jobs[0]);
+    return response.status(200).json(jobs[0]);
   } catch (err) {
     console.log(err);
-    response.status(500).json({ err_message: "Internal server error" });
+    return response.status(500).json({ err_message: "Internal server error" });
   }
 });
 
@@ -165,9 +166,9 @@ router.get("/myJobs", verifyToken, async (request, response) => {
       .promisify(connection.query)
       .call(connection, jobsQuery, [empId]);
 
-    response.status(200).json(jobs);
+    return response.status(200).json(jobs);
   } catch (err) {
-    response.status(500).json({ err_message: "Internal server error" });
+    return response.status(500).json({ err_message: "Internal server error" });
   }
 });
 
