@@ -75,7 +75,7 @@ router.post("/submit/:sId/:tId", upload.none(), (request, response) => {
   const { value, result } = data;
   try {
     const sqlQuery =
-      "update material_test set status='FINISHED',submitted_on=?, test_result = ?, test_details = ? where sample_id = ? and test_id = ?";
+      "update material_test set status='FINISHED',submitted_on=?, test_result = ?, test_details = ? where sample_id = ? and test_id = ? ";
     const queryValues = [new Date(), value, result, sId, tId];
     pool.query(sqlQuery, queryValues, (err, result) => {
       if (err) {
