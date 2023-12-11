@@ -45,4 +45,24 @@ const orderConformationMail = (receiptentMail, receiptentName) => {
   return sendEmail(receiptentMail, subject, message);
 };
 
-module.exports = { orderConformationMail };
+const conformingLeaveAppliedMail = (
+  employeeFullname,
+  fromDate,
+  to,
+  mailTo,
+  mailFrom
+) => {
+  const subject = "Leave Application";
+  const message = `
+  Dear Sir,
+  
+  Am requesting a leave ${fromDate} to ${to}. 
+  
+  Please Approve me a leave for 2 days 
+
+  `;
+
+  return sendEmail(mailTo, subject, message);
+};
+
+module.exports = { orderConformationMail, conformingLeaveAppliedMail };

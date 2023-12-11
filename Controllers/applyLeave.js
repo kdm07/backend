@@ -4,21 +4,21 @@ const applyLeave = async (emp_id, fromDate, toDate, subject, body) => {
   try {
     const updateLeaveQuery = `
         INSERT INTO leaves
-        (emp_id,start_date,end_date,subject,reason ,applied_on ,reporting_manager_approval ,reporting_manager_approval_date ,hr_approval ,hr_approval_on ,reject)
+        (emp_id,start_date,end_date,subject,reason ,applied_on ,reporting_manager_approval  ,hr_approval  ,reject)
         VALUES
-        (?,?,?,?,?,?,?,?,?,?,?)`;
+        (?,?,?,?,?,?,?,?,?)`;
 
     const queryValues = [
       emp_id,
-      fromDate,
-      toDate,
+      fromDate.toISOString().substring(0, 10),
+      toDate.toISOString().substring(0, 10),
       subject,
       body,
       new Date(),
       false,
-      null,
+
       false,
-      null,
+
       false,
     ];
 

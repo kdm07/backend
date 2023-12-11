@@ -550,38 +550,15 @@ router.get("/staff-dept-role", async (request, response) => {
   }
 });
 
-// router.post(
-//   "/applyLeave",
-//   upload.none(),
-//   verifyToken,
-//   async (request, response) => {
-//     const username = request.user;
-//     const userDetails = await getUserDetails(username);
-//     const { fromDate, to, subject, body } = JSON.parse(request.body);
-//     try {
-//       const apply = await applyLeave(
-//         userDetails.emp_id,
-//         fromDate,
-//         to,
-//         subject,
-//         body,
-//         userDetails.supervisor
-//       );
-//     } catch (err) {
-//       console.log(err);
-//     }
-//   }
-// );
-
 router.post(
   "/applyLeave",
   upload.none(),
   verifyToken,
   async (request, response) => {
-    const { fromDate, to, subject, body } = JSON.parse(request.body);
+    const { fromDate, to, subject, body } = JSON.parse(request.body.payLoad);
 
     try {
-      const userDetails = await getEmployeeUsingUsername(user);
+      const userDetails = await getEmployeeUsingUsername(request.user.username);
       const {
         emp_id,
         first_name,

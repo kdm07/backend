@@ -5,6 +5,8 @@ const router = express.Router();
 const { verifyToken } = require("./verifyToken");
 const multer = require("multer");
 const pool = require("./config");
+const submitChemicalTest = require("./Controllers/submitChemicalTest");
+const submitPhysicalTest = require("./Controllers/submitPhysicalTest");
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -74,23 +76,14 @@ router.post("/submit/:sId/:tId", upload.none(), (request, response) => {
   const tId = request.params.tId;
   const sId = request.params.sId;
   const data = request.body;
-  const { value, result } = data;
+  const { value = 0, result, discipline, multipleRes } = data;
+
   try {
-    const sqlQuery =
-      "update material_test set status='FINISHED',submitted_on=?, test_result = ?, test_details = ? where sample_id = ? and test_id = ?";
-    const queryValues = [new Date(), parseFloat(value), result, sId, tId];
-    pool.query(sqlQuery, queryValues, (err, result) => {
-      if (err) {
-        console.log(err);
-        return response
-          .status(500)
-          .send({ err_message: "Internal server error" });
-      } else {
-        return response
-          .status(200)
-          .send({ message: "jobs submitted successfully" });
-      }
-    });
+    if (discipline === "PHYSICAL") {
+      submitPhysicalTest(response, sId, tId, value, result, multipleRes); //final value = 0,result = all states,multiple results
+    } else {
+      submitChemicalTest(response, sId, tId, value, result);
+    }
   } catch (e) {
     console.log("catch");
     return response.status(500).send({ err_message: "Internal server error" });
@@ -106,7 +99,7 @@ router.get("/review/:sId/:tId", async (request, response) => {
 
     await util.promisify(connection.beginTransaction).call(connection);
 
-    const jobsQuery = `select o.due_date,mt.sample_id,om.quantity as qty , om.subgroup as subgroup_id,o.project_name,o.assigned_on,mt.test_id,mt.id as job_id,mt.status,s.name,t.test_name from material_test mt join order_material om on om.sample_id = mt.sample_id join orders o on o.order_id = om.order_id join test t on mt.test_id = t.id join subgroup s on s.id = om.subgroup  where mt.sample_id = ? and mt.test_id = ?`;
+    const jobsQuery = `select o.due_date,mt.sample_id,om.quantity as qty,om.job_number as job_number , om.subgroup as subgroup_id,o.project_name,o.assigned_on,mt.test_id,mt.id as job_id,mt.status,s.name,t.test_name from material_test mt join order_material om on om.sample_id = mt.sample_id join orders o on o.order_id = om.order_id join test t on mt.test_id = t.id join subgroup s on s.id = om.subgroup  where mt.sample_id = ? and mt.test_id = ?`;
 
     const jobs = await util
       .promisify(connection.query)
@@ -134,7 +127,7 @@ router.get("/myJobs/:sId/:tId", verifyToken, async (request, response) => {
 
     const empId = rows[0].emp_id;
 
-    const jobsQuery = `select o.due_date,mt.sample_id,om.job_number,om.quantity as qty ,om.subgroup as subgroup_id,o.project_name,o.assigned_on,mt.test_id,mt.id as job_id,mt.status,s.name,t.test_name from material_test mt join order_material om on om.sample_id = mt.sample_id join orders o on o.order_id = om.order_id join test t on mt.test_id = t.id join subgroup s on s.id = om.subgroup  where assign_to = ? and mt.sample_id = ? and mt.test_id = ?`;
+    const jobsQuery = `select o.due_date,mt.sample_id,om.job_number,om.quantity as qty ,om.subgroup as subgroup_id,o.project_name,o.assigned_on,mt.test_id,mt.id as job_id,mt.status,s.name,t.test_name,t.discipline from material_test mt join order_material om on om.sample_id = mt.sample_id join orders o on o.order_id = om.order_id join test t on mt.test_id = t.id join subgroup s on s.id = om.subgroup  where assign_to = ? and mt.sample_id = ? and mt.test_id = ?`;
 
     const jobs = await util
       .promisify(connection.query)

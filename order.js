@@ -31,15 +31,15 @@ async function saveOrUpdateOrder(req, res, id) {
 
     await insertOrUpdateTests(connection, req.body);
 
-    const customerResult = await getCustomerDetails(
-      connection,
-      req.body.customer_id
-    );
+    // const customerResult = await getCustomerDetails(
+    //   connection,
+    //   req.body.customer_id
+    // );
 
-    await orderConformationMail(
-      customerResult[0].email,
-      customerResult[0].reporting_name
-    );
+    // await orderConformationMail(
+    //   customerResult[0].email,
+    //   customerResult[0].reporting_name
+    // );
 
     await util.promisify(connection.commit).call(connection);
     connection.release();
