@@ -112,6 +112,7 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
     order_id,
     project_name,
     subject,
+    parentRef,
     additional_info,
     discount,
     transport_fee,
@@ -150,7 +151,8 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
         transport_fee = ?,
         due_date = ?,
         additional_info = ?,
-        customer_id = ?
+        customer_id = ?,
+        parent_ref = ?
       WHERE order_id = ?`
     : `INSERT INTO orders (
       order_id,
@@ -164,7 +166,8 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
       registration_date,
       customer_id,
       status,
-      order_number
+      order_number,
+      parent_ref = ?
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)`;
 
   const queryValues = id
@@ -181,6 +184,7 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
         customer_id,
         PENDING_FOR_REVIEW,
         order_number,
+        parentRef
       ]
     : [
         order_id,
@@ -196,6 +200,7 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
         "PENDING_FOR_REVIEW",
 
         order_number,
+        parentRef
       ];
 
   return await util
@@ -332,12 +337,22 @@ router.get("/:orderId", async (req, res) => {
     ]);
 
     const sampleMaterials = await query(
-      `SELECT  om.quantity as qty , om.source as source, om.sample_id,sg.name as sampleName,sg.tech_ref as requirements
+      `SELECT om.job_number, om.quantity as qty , om.source as source, om.sample_id,sg.name as sampleName,sg.tech_ref as requirements
       FROM order_material om
       JOIN subgroup sg ON sg.id = om.subgroup
       WHERE om.order_id = ?`,
       [order.order_id]
     );
+
+    // const sampleMaterials = await query(
+    //   `SELECT om.job_number, om.quantity as qty , om.source as source, om.sample_id, sg.name as sampleName, sg.tech_ref as requirements, o.subject
+    //   FROM order_material om
+    //   JOIN subgroup sg ON sg.id = om.subgroup
+    //   JOIN orders o ON o.order_id = om.order_id
+    //   WHERE om.order_id = ?`,
+    //   [order.order_id]
+    // );
+    
 
     const staffData = await query(
       `select CONCAT(emp.first_name, ' ', emp.last_name) AS name,emp.emp_id,dept.dept_id,profile_image as profile from department dept join employee emp on emp.department = dept.dept_id where dept_id in (?,?)`,
