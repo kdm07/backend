@@ -14,6 +14,7 @@ router.post("/verify", upload.none(), (req, res) => {
   try {
     pool.query(query, [username], (err, results) => {
       if (err) {
+        console.log(err);
         return res
           .status(500)
           .json({ error: "Failed to initialise Database error" });
