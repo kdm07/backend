@@ -42,7 +42,7 @@ router.post("/add", upload.none(), (req, res) => {
 
   try {
     pool.query(
-      "INSERT INTO test (test_name, requirements,price,method,discipline,nabl_status,sub_group,additional_info) VALUES ( ?,?,?,?, ?,?,?,?)",
+      "INSERT INTO test (test_name, test_limits,price,method,discipline,nabl_status,sub_group,additional_info) VALUES ( ?,?,?,?, ?,?,?,?)",
       [
         test_name,
         requirements,

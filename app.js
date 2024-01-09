@@ -16,6 +16,8 @@ const order = require("./order");
 const authRoute = require("./auth");
 const jobs = require("./jobs");
 const role = require("./roles");
+const invoiceData = require("./invoiceData");
+const geoInvoiceData = require("./geoInvoiceData");
 
 app.use("/employee", employeeRoutes);
 app.use("/customer", customerRoutes);
@@ -26,6 +28,9 @@ app.use("/order", order);
 app.use("/auth", authRoute);
 app.use("/jobs", jobs);
 app.use("/role", role);
+app.use("/invoice", invoiceData);
+app.use("/geoinvoice", geoInvoiceData);
+
 // app.use("/roles", roles);
 
 app.listen(8081, () => {

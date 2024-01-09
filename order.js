@@ -212,9 +212,9 @@ async function insertOrUpdateMaterials(connection, orderData, orderId) {
   const materials = JSON.parse(orderData.testData);
   const materialResults = [];
   for (const material of materials) {
-    const { sampleId, subgroupId, materialSource, quantity, units, ref, brandName, refCode, sampleNum, siteName } = material;
+    const { sampleId, subgroupId, materialSource, quantity, units, ref, brandName, refCode, sampleNum, siteName,weekNo } = material;
     const sqlQuery =
-      "INSERT INTO order_material (order_id, sample_id, subgroup,source,quantity,job_number,brand_name,ref_code,sample_number,site_name) VALUES (?,?,?,?,?,?,?,?,?,?)";
+      "INSERT INTO order_material (order_id, sample_id, subgroup,source,quantity,job_number,brand_name,ref_code,sample_number,site_name,week_number) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
     const queryValues = [
       orderId,
       sampleId,
@@ -225,7 +225,8 @@ async function insertOrUpdateMaterials(connection, orderData, orderId) {
       brandName, 
       refCode, 
       sampleNum,
-      siteName
+      siteName,
+      weekNo
     ];
 
     const result = await util
@@ -340,7 +341,7 @@ router.get("/:orderId", async (req, res) => {
     ]);
 
     const sampleMaterials = await query(
-      `SELECT om.brand_name as brandName, om.ref_code as refCode, om.sample_number as sampleNum, om.site_name as siteName,om.job_number, om.quantity as qty , om.source as source, om.sample_id,sg.name as sampleName,sg.tech_ref as requirements
+      `SELECT om.week_number as weekNo,om.brand_name as brandName, om.ref_code as refCode, om.sample_number as sampleNum, om.site_name as siteName,om.job_number, om.quantity as qty , om.source as source, om.sample_id,sg.name as sampleName,sg.tech_ref as requirements
       FROM order_material om
       JOIN subgroup sg ON sg.id = om.subgroup
       WHERE om.order_id = ?`,
