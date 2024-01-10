@@ -24,12 +24,12 @@ router.put("/:id", upload.none(), async (req, res) => {
   console.log("hhh");
 
   try {
-    const { val } = req.body;
+    const { val, date } = req.body;
     const { id } = req.params;
 
-    const updateQuery = `update invoicedata set tax_conversion = ?, tax_number = ? where invoice_number = '${id.toString()}'`;
+    const updateQuery = `update invoicedata set tax_conversion = ?, tax_number = ?, tax_invoice_date = ? where invoice_number = '${id.toString()}'`;
 
-    pool.query(updateQuery, [1, val], (err, success) => {
+    pool.query(updateQuery, [1, val, date.toString()], (err, success) => {
       if (err) {
         console.log(err);
       } else {
