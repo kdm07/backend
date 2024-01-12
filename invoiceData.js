@@ -11,13 +11,18 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 router.get("", (req, res) => {
-  pool.query(`select * from invoicedata`, (err, results) => {
-    if (err) {
-      res.status(500).json({ error: "Error fetching data" });
-    } else {
-      res.status(200).json(results);
+  pool.query(
+    `SELECT *
+    FROM invoicedata
+    INNER JOIN customer ON invoicedata.customer_id = customer.id`,
+    (err, results) => {
+      if (err) {
+        res.status(500).json({ error: "Error fetching data" });
+      } else {
+        res.status(200).json(results);
+      }
     }
-  });
+  );
 });
 
 router.put("/:id", upload.none(), async (req, res) => {
@@ -95,15 +100,41 @@ router.put("/:id", upload.none(), async (req, res) => {
 
 router.get("/:id", (req, res) => {
   const { id } = req.params;
-  const getEmployeeByIdQuery = `
-    SELECT * FROM invoicedata WHERE order_number = '${id}'
-  `;
+  // const getEmployeeByIdQuery = `
+  //   SELECT * FROM invoicedata WHERE order_number = '${id}'
+  // `;
 
   const getInvoiceByIdQuery = `
   SELECT *
   FROM invoicedata
   INNER JOIN customer ON invoicedata.customer_id = customer.id
   WHERE invoicedata.order_number = '${id}';
+`;
+
+  pool.query(getInvoiceByIdQuery, (err, result) => {
+    if (err) {
+      res.status(500).json({ error: "Error fetching employee data" });
+    } else {
+      if (result.length > 0) {
+        res.status(200).json(result[0]);
+      } else {
+        res.status(404).json({ error: "Employee not found" });
+      }
+    }
+  });
+});
+
+router.get("/update/:id", (req, res) => {
+  const { id } = req.params;
+  // const getEmployeeByIdQuery = `
+  //   SELECT * FROM invoicedata WHERE order_number = '${id}'
+  // `;
+
+  const getInvoiceByIdQuery = `
+  SELECT *
+  FROM invoicedata
+  INNER JOIN customer ON invoicedata.customer_id = customer.id
+  WHERE invoicedata.invoice_number = '${id}';
 `;
 
   pool.query(getInvoiceByIdQuery, (err, result) => {
@@ -190,8 +221,8 @@ function saveOrUpdateCustomer(req, res, id) {
   let sqlQuery;
   let queryValues;
 
-  //   if (id === undefined) {
-  sqlQuery = `
+  if (id === undefined) {
+    sqlQuery = `
       INSERT INTO invoiceData (
         customer_id,
         subject,
@@ -206,47 +237,51 @@ function saveOrUpdateCustomer(req, res, id) {
         geo,
         payment_schedules
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)`;
-  queryValues = [
-    customerData.customerId,
-    customerData.subject,
-    customerData.project,
-    customerData.ref,
-    customerData.invoiceNumber,
-    customerData.orderNumber,
-    customerData.orderDate,
-    customerData.matTest,
-    customerData.discount,
-    customerData.transfee,
-    customerData.geo,
-    customerData.paymentSchedules,
-  ];
-  //   } else {
-  //     sqlQuery = `
-  //       UPDATE invoiceData
-  //       SET
-  //       subject = ?,
-  //       project = ?,
-  //       ref = ?,
-  //       invoice_number = ?,
-  //       order_number = ?,
-  //       order_date = ?,
-  //       mat_test = ?,
-  //       discount = ?,
-  //       transport_fee = ?
-  //       WHERE customer_id = ?`;
-  //     queryValues = [
-  //       customerData.subject,
-  //       customerData.project,
-  //       customerData.ref,
-  //       customerData.invoiceNumber,
-  //       customerData.orderNumber,
-  //       customerData.orderDate,
-  //       customerData.matTest,
-  //       customerData.discount,
-  //       customerData.transfee,
-  //       id,
-  //     ];
-  //   }
+    queryValues = [
+      customerData.customerId,
+      customerData.subject,
+      customerData.project,
+      customerData.ref,
+      customerData.invoiceNumber,
+      customerData.orderNumber,
+      customerData.orderDate,
+      customerData.matTest,
+      customerData.discount,
+      customerData.transfee,
+      customerData.geo,
+      customerData.paymentSchedules,
+    ];
+  } else {
+    sqlQuery = `
+        UPDATE invoiceData
+        SET
+        customer_id = ? ,
+        subject= ?,
+        project= ?,
+        ref= ?,
+        order_number= ?,
+        order_date= ?,
+        mat_test= ?,
+        discount= ?,
+        transport_fee= ?,
+        geo= ?,
+        payment_schedules= ?,
+        WHERE invoice_number = ?`;
+    queryValues = [
+      customerData.customerId,
+      customerData.subject,
+      customerData.project,
+      customerData.ref,
+      customerData.orderNumber,
+      customerData.orderDate,
+      customerData.matTest,
+      customerData.discount,
+      customerData.transfee,
+      customerData.geo,
+      customerData.paymentSchedules,
+      id,
+    ];
+  }
 
   pool.query(sqlQuery, queryValues, (err, result) => {
     if (err) {
