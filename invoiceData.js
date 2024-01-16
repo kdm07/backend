@@ -259,19 +259,21 @@ function saveOrUpdateCustomer(req, res, id) {
         subject= ?,
         project= ?,
         ref= ?,
+        invoice_number = ?,
         order_number= ?,
         order_date= ?,
         mat_test= ?,
         discount= ?,
         transport_fee= ?,
         geo= ?,
-        payment_schedules= ?,
+        payment_schedules= ?
         WHERE invoice_number = ?`;
     queryValues = [
       customerData.customerId,
       customerData.subject,
       customerData.project,
       customerData.ref,
+      customerData.invoiceNumber,
       customerData.orderNumber,
       customerData.orderDate,
       customerData.matTest,
