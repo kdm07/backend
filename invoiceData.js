@@ -216,6 +216,8 @@ function saveOrUpdateCustomer(req, res, id) {
     transfee: req.body.transfee,
     geo: req.body.geo,
     paymentSchedules: req.body.paymentSchedules,
+    totalPayment: req.body.totalPayment,
+    percentage: req.body.percentage,
   };
 
   let sqlQuery;
@@ -235,8 +237,10 @@ function saveOrUpdateCustomer(req, res, id) {
         discount,
         transport_fee,
         geo,
-        payment_schedules
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)`;
+        payment_schedules,
+        total_payment,
+        percentage
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)`;
     queryValues = [
       customerData.customerId,
       customerData.subject,
@@ -250,6 +254,8 @@ function saveOrUpdateCustomer(req, res, id) {
       customerData.transfee,
       customerData.geo,
       customerData.paymentSchedules,
+      customerData.totalPayment,
+      customerData.percentage,
     ];
   } else {
     sqlQuery = `
@@ -266,7 +272,9 @@ function saveOrUpdateCustomer(req, res, id) {
         discount= ?,
         transport_fee= ?,
         geo= ?,
-        payment_schedules= ?
+        payment_schedules= ?,
+        total_payment = ?,
+        percentage =?
         WHERE invoice_number = ?`;
     queryValues = [
       customerData.customerId,
@@ -281,6 +289,8 @@ function saveOrUpdateCustomer(req, res, id) {
       customerData.transfee,
       customerData.geo,
       customerData.paymentSchedules,
+      customerData.totalPayment,
+      customerData.percentage,
       id,
     ];
   }
