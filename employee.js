@@ -363,9 +363,19 @@ router.put("/update/:id", upload.none(), (request, res) => {
 
 //get Employee's list
 router.get("", (req, res) => {
+  console.log(pool);
   const employeeQuery = `select * from employee e join role r on e.role = r.role_id join department d on d.dept_id = e.department`;
   pool.query(employeeQuery, (err, results) => {
     if (err) {
+      console.log(
+        "below statement is error---------------------------------------------------"
+      );
+      console.log(pool);
+      console.log(
+        "below is error object----------------------------------------------------------"
+      );
+      console.log(err);
+      console.log("error occured");
       console.error("Error fetching data: " + err.message);
       res.status(500).json({ error: "Error fetching data" });
     } else {

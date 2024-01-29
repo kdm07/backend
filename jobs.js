@@ -152,8 +152,7 @@ router.get("/myJobs", verifyToken, async (request, response) => {
       .call(connection, empIdQuery, [username]);
 
     const empId = rows[0].emp_id;
-
-    const jobsQuery = `select o.due_date,o.assigned_on,mt.sample_id,om.job_number,mt.test_id,mt.status,s.name,t.test_name from material_test mt join order_material om on om.sample_id = mt.sample_id join orders o on o.order_id = om.order_id join test t on mt.test_id = t.id join subgroup s on s.id = om.subgroup  where assign_to = ? order by o.assigned_on asc, mt.status desc`;
+    const jobsQuery = `select o.due_date,o.assigned_on,mt.sample_id,om.job_number,mt.test_id,mt.status,s.name,t.test_name from material_test mt join order_material om on om.sample_id = mt.sample_id join orders o on o.order_id = om.order_id join test t on mt.test_id = t.id join subgroup s on s.id = om.subgroup  where assign_to = ? and mt.status not in ('ACCEPTED', 'FINISHED') order by o.assigned_on asc, mt.status desc`;
 
     const jobs = await util
       .promisify(connection.query)
