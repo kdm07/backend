@@ -4,7 +4,28 @@ const cors = require("cors");
 const app = express();
 app.use(express.json());
 app.use("/public", express.static(path.join(__dirname, "public")));
-app.use(cors());
+require("dotenv").config();
+
+const port = process.env.PORT;
+
+// app.use(cors());
+
+// // const corsOptions = {
+// //   origin: "", // Allow all origins (not recommended for production)
+// //   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+// //   allowedHeaders: "Content-Type, Authorization",
+// //   credentials: true, // Enable cookies and credentials
+// // };
+
+// // app.use(cors(corsOptions));
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "http://192.168.124.22:85");
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
+  next();
+});
 
 const employeeRoutes = require("./employee");
 // const roles = require("./roles");
@@ -16,8 +37,7 @@ const order = require("./order");
 const authRoute = require("./auth");
 const jobs = require("./jobs");
 const role = require("./roles");
-const invoiceData = require("./invoiceData");
-const geoInvoiceData = require("./geoInvoiceData");
+const random = require("./random");
 
 app.use("/employee", employeeRoutes);
 app.use("/customer", customerRoutes);
@@ -28,12 +48,10 @@ app.use("/order", order);
 app.use("/auth", authRoute);
 app.use("/jobs", jobs);
 app.use("/role", role);
-app.use("/invoice", invoiceData);
-app.use("/geoinvoice", geoInvoiceData);
-
+app.use("/random", random);
 // app.use("/roles", roles);
 
-app.listen(8081, () => {
+app.listen(port, () => {
   console.log("Server started on port 8081");
 });
 

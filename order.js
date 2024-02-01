@@ -30,16 +30,19 @@ async function saveOrUpdateOrder(req, res, id) {
     await insertOrUpdateMaterials(connection, req.body, req.body.order_id);
 
     await insertOrUpdateTests(connection, req.body);
-
+    // malil block
     // const customerResult = await getCustomerDetails(
     //   connection,
     //   req.body.customer_id
     // );
 
     // await orderConformationMail(
-    //   customerResult[0].email,
+    //   // customerResult[0].email,
+    //   "pavanmarapalli171862@gmail.com",
     //   customerResult[0].reporting_name
     // );
+
+    //end of mail block
 
     await util.promisify(connection.commit).call(connection);
     connection.release();
