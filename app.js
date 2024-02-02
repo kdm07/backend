@@ -29,6 +29,9 @@ const authRoute = require("./auth");
 const jobs = require("./jobs");
 const role = require("./roles");
 const random = require("./random");
+const invoice = require('./invoiceData');
+const geoInvoice = require('./geoInvoiceData');
+
 
 app.use("/employee", employeeRoutes);
 app.use("/customer", customerRoutes);
@@ -40,6 +43,7 @@ app.use("/auth", authRoute);
 app.use("/jobs", jobs);
 app.use("/role", role);
 app.use("/random", random);
+app.use('/invoice', invoice);
 // app.use("/roles", roles);
 
 app.listen(port, () => {
