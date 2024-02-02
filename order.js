@@ -175,36 +175,36 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
 
   const queryValues = id
     ? [
-        order_id,
-        project_name,
-        subject,
-        letterPath,
-        additional_info,
-        discount,
-        transport_fee,
-        due_date,
-        new Date(),
-        customer_id,
-        PENDING_FOR_REVIEW,
-        order_number,
-        parentRef
-      ]
+      order_id,
+      project_name,
+      subject,
+      letterPath,
+      additional_info,
+      discount,
+      transport_fee,
+      due_date,
+      new Date(),
+      customer_id,
+      PENDING_FOR_REVIEW,
+      order_number,
+      parentRef
+    ]
     : [
-        order_id,
-        project_name,
-        subject,
-        letterPath,
-        additional_info,
-        discount,
-        transport_fee,
-        due_date,
-        new Date(),
-        customer_id,
-        "PENDING_FOR_REVIEW",
+      order_id,
+      project_name,
+      subject,
+      letterPath,
+      additional_info,
+      discount,
+      transport_fee,
+      due_date,
+      new Date(),
+      customer_id,
+      "PENDING_FOR_REVIEW",
 
-        order_number,
-        parentRef
-      ];
+      order_number,
+      parentRef
+    ];
 
   return await util
     .promisify(connection.query)
@@ -215,9 +215,9 @@ async function insertOrUpdateMaterials(connection, orderData, orderId) {
   const materials = JSON.parse(orderData.testData);
   const materialResults = [];
   for (const material of materials) {
-    const { sampleId, subgroupId, materialSource, quantity, units, ref, brandName, refCode, sampleNum, siteName,weekNo } = material;
+    const { sampleId, subgroupId, materialSource, quantity, units, ref, brandName, refCode, sampleNum, siteName, weekNo, grade } = material;
     const sqlQuery =
-      "INSERT INTO order_material (order_id, sample_id, subgroup,source,quantity,job_number,brand_name,ref_code,sample_number,site_name,week_number) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+      "INSERT INTO order_material (order_id, sample_id, subgroup,source,quantity,job_number,brand_name,ref_code,sample_number,site_name,week_number,grade) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
     const queryValues = [
       orderId,
       sampleId,
@@ -225,11 +225,12 @@ async function insertOrUpdateMaterials(connection, orderData, orderId) {
       materialSource,
       quantity,
       ref,
-      brandName, 
-      refCode, 
+      brandName,
+      refCode,
       sampleNum,
       siteName,
-      weekNo
+      weekNo,
+      grade
     ];
 
     const result = await util
@@ -344,7 +345,7 @@ router.get("/:orderId", async (req, res) => {
     ]);
 
     const sampleMaterials = await query(
-      `SELECT om.week_number as weekNo,om.brand_name as brandName, om.ref_code as refCode, om.sample_number as sampleNum, om.site_name as siteName,om.job_number, om.quantity as qty , om.source as source, om.sample_id,sg.name as sampleName,sg.tech_ref as requirements
+      `SELECT om.grade,om.week_number as weekNo,om.brand_name as brandName, om.ref_code as refCode, om.sample_number as sampleNum, om.site_name as siteName,om.job_number, om.quantity as qty , om.source as source, om.sample_id,sg.name as sampleName,sg.tech_ref as requirements
       FROM order_material om
       JOIN subgroup sg ON sg.id = om.subgroup
       WHERE om.order_id = ?`,
@@ -359,7 +360,7 @@ router.get("/:orderId", async (req, res) => {
     //   WHERE om.order_id = ?`,
     //   [order.order_id]
     // );
-    
+
 
     const staffData = await query(
       `select CONCAT(emp.first_name, ' ', emp.last_name) AS name,emp.emp_id,dept.dept_id,profile_image as profile from department dept join employee emp on emp.department = dept.dept_id where dept_id in (?,?)`,
@@ -369,9 +370,9 @@ router.get("/:orderId", async (req, res) => {
     const finalResult = await Promise.all(
       sampleMaterials.map(async (eachSample) => {
         const beforeAssign =
-          "select  mt.test_id,mt.test_result,mt.submitted_on,t.nabl_status,mt.status,mt.assign_to as assignedTo, t.discipline as discipline , t.price as price,t.test_limits ,t.test_name as testName,t.discipline from material_test mt join test t on t.id = mt.test_id where mt.sample_id = ?";
+          "select  mt.report_values,mt.test_id,mt.test_result,mt.submitted_on,t.nabl_status,mt.status,mt.assign_to as assignedTo, t.discipline as discipline , t.price as price,t.test_limits ,t.test_name as testName,t.discipline from material_test mt join test t on t.id = mt.test_id where mt.sample_id = ?";
         const afterAssign =
-          "select mt.test_id,mt.test_result,mt.submitted_on,t.nabl_status,mt.status,mt.assign_to as assignedTo, t.discipline as discipline,t.price as price,t.test_limits ,t.test_name as testName,t.discipline,t.id as testId,e.profile_image as empImage from material_test mt join test t on t.id = mt.test_id join employee e on e.emp_id = mt.assign_to   where mt.sample_id = ?";
+          "select mt.report_values,mt.test_id,mt.test_result,mt.submitted_on,t.nabl_status,mt.status,mt.assign_to as assignedTo, t.discipline as discipline,t.price as price,t.test_limits ,t.test_name as testName,t.discipline,t.id as testId,e.profile_image as empImage from material_test mt join test t on t.id = mt.test_id join employee e on e.emp_id = mt.assign_to   where mt.sample_id = ?";
         const tests = await query(
           order.status === "ASSIGNED" ? afterAssign : beforeAssign,
           [eachSample.sample_id]
