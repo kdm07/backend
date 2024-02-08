@@ -8,24 +8,15 @@ require("dotenv").config();
 
 const port = process.env.PORT;
 
-// app.use(cors());
-
-// // const corsOptions = {
-// //   origin: "", // Allow all origins (not recommended for production)
-// //   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-// //   allowedHeaders: "Content-Type, Authorization",
-// //   credentials: true, // Enable cookies and credentials
-// // };
-
-// // app.use(cors(corsOptions));
-
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://192.168.124.22:85");
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   res.header("Access-Control-Allow-Credentials", true);
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
   res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
   next();
 });
+
+// app.use(cors());
 
 const employeeRoutes = require("./employee");
 // const roles = require("./roles");
@@ -38,6 +29,8 @@ const authRoute = require("./auth");
 const jobs = require("./jobs");
 const role = require("./roles");
 const random = require("./random");
+const invoice = require("./invoiceData");
+const geoInvoice = require("./geoInvoiceData");
 
 app.use("/employee", employeeRoutes);
 app.use("/customer", customerRoutes);
@@ -49,6 +42,7 @@ app.use("/auth", authRoute);
 app.use("/jobs", jobs);
 app.use("/role", role);
 app.use("/random", random);
+app.use("/invoice", invoice);
 // app.use("/roles", roles);
 
 app.listen(port, () => {
