@@ -116,6 +116,7 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
     project_name,
     subject,
     parentRef,
+    hqletter,
     additional_info,
     discount,
     transport_fee,
@@ -155,7 +156,8 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
         due_date = ?,
         additional_info = ?,
         customer_id = ?,
-        parent_ref = ?
+        parent_ref = ?,
+        hqletter = ?,
       WHERE order_id = ?`
     : `INSERT INTO orders (
       order_id,
@@ -170,8 +172,8 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
       customer_id,
       status,
       order_number,
-      parent_ref
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)`;
+      parent_ref, hqletter
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?)`;
 
   const queryValues = id
     ? [
@@ -187,7 +189,7 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
       customer_id,
       PENDING_FOR_REVIEW,
       order_number,
-      parentRef
+      parentRef, hqletter
     ]
     : [
       order_id,
@@ -203,7 +205,7 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
       "PENDING_FOR_REVIEW",
 
       order_number,
-      parentRef
+      parentRef, hqletter
     ];
 
   return await util
