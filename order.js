@@ -22,7 +22,6 @@ async function saveOrUpdateOrder(req, res, id) {
   const connection = await util.promisify(pool.getConnection).call(pool);
 
   try {
-    console.log(req.body);
     await util.promisify(connection.beginTransaction).call(connection);
 
     await insertOrUpdateOrder(connection, req.body, req.file, id);
@@ -177,36 +176,38 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
 
   const queryValues = id
     ? [
-      order_id,
-      project_name,
-      subject,
-      letterPath,
-      additional_info,
-      discount,
-      transport_fee,
-      due_date,
-      new Date(),
-      customer_id,
-      PENDING_FOR_REVIEW,
-      order_number,
-      parentRef, hqletter
-    ]
+        order_id,
+        project_name,
+        subject,
+        letterPath,
+        additional_info,
+        discount,
+        transport_fee,
+        due_date,
+        new Date(),
+        customer_id,
+        PENDING_FOR_REVIEW,
+        order_number,
+        parentRef,
+        hqletter,
+      ]
     : [
-      order_id,
-      project_name,
-      subject,
-      letterPath,
-      additional_info,
-      discount,
-      transport_fee,
-      due_date,
-      new Date(),
-      customer_id,
-      "PENDING_FOR_REVIEW",
+        order_id,
+        project_name,
+        subject,
+        letterPath,
+        additional_info,
+        discount,
+        transport_fee,
+        due_date,
+        new Date(),
+        customer_id,
+        "PENDING_FOR_REVIEW",
 
-      order_number,
-      parentRef, hqletter
-    ];
+        order_number,
+        parentRef,
+        hqletter,
+      ];
 
   return await util
     .promisify(connection.query)
@@ -217,7 +218,20 @@ async function insertOrUpdateMaterials(connection, orderData, orderId) {
   const materials = JSON.parse(orderData.testData);
   const materialResults = [];
   for (const material of materials) {
-    const { sampleId, subgroupId, materialSource, quantity, units, ref, brandName, refCode, sampleNum, siteName, weekNo, grade } = material;
+    const {
+      sampleId,
+      subgroupId,
+      materialSource,
+      quantity,
+      units,
+      ref,
+      brandName,
+      refCode,
+      sampleNum,
+      siteName,
+      weekNo,
+      grade,
+    } = material;
     const sqlQuery =
       "INSERT INTO order_material (order_id, sample_id, subgroup,source,quantity,job_number,brand_name,ref_code,sample_number,site_name,week_number,grade) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
     const queryValues = [
@@ -232,7 +246,7 @@ async function insertOrUpdateMaterials(connection, orderData, orderId) {
       sampleNum,
       siteName,
       weekNo,
-      grade
+      grade,
     ];
 
     const result = await util
@@ -298,7 +312,7 @@ router.put("/update/:id", upload.single("letter"), (req, res) => {
 
 router.get("", (req, res) => {
   const sqlQuery = `
-    SELECT * FROM orders order by order_number desc, due_date asc
+    SELECT * FROM orders order by registration_date desc;
   `;
   try {
     pool.query(sqlQuery, (err, results) => {
@@ -363,7 +377,6 @@ router.get("/:orderId", async (req, res) => {
     //   [order.order_id]
     // );
 
-
     const staffData = await query(
       `select CONCAT(emp.first_name, ' ', emp.last_name) AS name,emp.emp_id,dept.dept_id,profile_image as profile from department dept join employee emp on emp.department = dept.dept_id where dept_id in (?,?)`,
       ["LABORATORY_CHEMICAL", "LABORATORY_MECHANICAL"]
@@ -426,14 +439,11 @@ router.get(
       const count = await util
         .promisify(connection.query)
         .call(connection, getCount);
-
       c = count[0].c;
-
       await util.promisify(connection.commit).call(connection);
       connection.release();
       return response.status(200).send({ customers, subGroups, tests, c });
     } catch (err) {
-      console.log(err);
       await util.promisify(connection.rollback).call(connection);
       connection.release();
       return response.status(500).json({ error: "Internal server error" });

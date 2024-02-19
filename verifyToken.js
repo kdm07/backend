@@ -30,7 +30,6 @@ const pool = require("./config");
 
 function verifyToken(request, response, next) {
   let jwtToken;
-  console.log("hello world in verify token");
   const authHeader = request.headers["authorization"];
   if (authHeader !== undefined) {
     jwtToken = authHeader.split(" ")[1];
