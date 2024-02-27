@@ -363,7 +363,6 @@ router.put("/update/:id", upload.none(), (request, res) => {
 
 //get Employee's list
 router.get("", (req, res) => {
-  console.log(pool);
   const employeeQuery = `select * from employee e join role r on e.role = r.role_id join department d on d.dept_id = e.department`;
   pool.query(employeeQuery, (err, results) => {
     if (err) {
