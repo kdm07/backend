@@ -30,7 +30,6 @@ const jobs = require("./jobs");
 const role = require("./roles");
 const random = require("./random");
 const invoice = require("./invoiceData");
-const geoInvoice = require("./geoInvoiceData");
 
 app.use("/employee", employeeRoutes);
 app.use("/customer", customerRoutes);
@@ -48,5 +47,3 @@ app.use("/invoice", invoice);
 app.listen(port, () => {
   console.log("Server started on port 8081");
 });
-
-// ALTER USER 'your_username'@'your_host' IDENTIFIED WITH 'mysql_native_password' BY 'your_password';

@@ -14,8 +14,10 @@ router.get("", (req, res) => {
   pool.query(`select * from invoicedata`, (err, results) => {
     if (err) {
       res.status(500).json({ error: "Error fetching data" });
+      console.log("err");
     } else {
       res.status(200).json(results);
+      console.log("cool");
     }
   });
 });
