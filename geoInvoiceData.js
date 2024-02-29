@@ -33,73 +33,18 @@ router.put("/:id", upload.none(), async (req, res) => {
 
     pool.query(updateQuery, [1, val], (err, success) => {
       if (err) {
-        console.log(err);
+        return res.status(500).json({ error: "Error fetching employee data" });
       } else {
-        console.log(success);
         return res.status(200).send({ message: "updated Successfully" });
       }
     });
   } catch (err) {
-    console.log(err);
+    return res.status(500).json({ error: "Error fetching employee data" });
   }
 });
 
-// router.put('/:invoiceNumber', upload.none(), async (req, res) => {
-//   console.log('hhh')
-//   // const { val } = req.body;
-//   // console.log(val)
-//   try {
-//     const { invoiceNumber } = req.params;
-//     console.log(invoiceNumber)
-
-//     const getEmployeeByIdQuery = `SELECT * FROM invoicedata WHERE invoice_number = '${invoiceNumber}'`;
-
-//     const result = pool.query(getEmployeeByIdQuery, (err, result) => {
-//       if (err) {
-//         res.status(500).json({ error: "Error fetching employee data" });
-//       } else {
-//         if (result.length > 0) {
-//           const order = result[0];
-
-//           if (order.tax_conversion === 1) {
-//             return res.status(400).json({ error: 'Order already converted to tax' });
-//           }
-
-//           order.tax_conversion = 1;
-//           order.tax_number += 1;
-
-//           // order.tax_number = need.toString();
-
-//           const updateOrderQuery = `
-//             UPDATE invoicedata
-//             SET tax_conversion = ${order.tax_conversion}, tax_number = ${order.tax_number}
-//             WHERE order_number = '${order.order_number}'
-//           `;
-
-//           pool.query(updateOrderQuery, (err, result) => {
-//             if (err) {
-//               res.status(500).json({ error: "Error updating order data" });
-//             } else {
-//               res.status(404).json({ error: "Employee not found" });
-//             }
-//           });
-//         } else {
-//           res.status(404).json({ error: "Employee not found" });
-//         }
-//       }
-//     });
-
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: 'Internal Server Error' });
-//   }
-// });
-
 router.get("/:id", (req, res) => {
   const { id } = req.params;
-  const getEmployeeByIdQuery = `
-    SELECT * FROM invoicedata WHERE order_number = '${id}'
-  `;
 
   const getInvoiceByIdQuery = `
   SELECT *
@@ -110,12 +55,12 @@ router.get("/:id", (req, res) => {
 
   pool.query(getInvoiceByIdQuery, (err, result) => {
     if (err) {
-      res.status(500).json({ error: "Error fetching employee data" });
+      return res.status(500).json({ error: "Error fetching employee data" });
     } else {
       if (result.length > 0) {
-        res.status(200).json(result[0]);
+        return res.status(200).json(result[0]);
       } else {
-        res.status(404).json({ error: "Employee not found" });
+        return res.status(404).json({ error: "Employee not found" });
       }
     }
   });
@@ -123,10 +68,6 @@ router.get("/:id", (req, res) => {
 
 router.get("/proforma/:id", (req, res) => {
   const { id } = req.params;
-  const getEmployeeByIdQuery = `
-    SELECT * FROM invoicedata WHERE customer_id = '${id}'
-  `;
-
   const getInvoiceByIdQuery = `
   SELECT *
   FROM invoicedata
@@ -136,12 +77,12 @@ router.get("/proforma/:id", (req, res) => {
 
   pool.query(getInvoiceByIdQuery, (err, result) => {
     if (err) {
-      res.status(500).json({ error: "Error fetching employee data" });
+      return res.status(500).json({ error: "Error fetching employee data" });
     } else {
       if (result.length > 0) {
-        res.status(200).json(result[0]);
+        return res.status(200).json(result[0]);
       } else {
-        res.status(404).json({ error: "Employee not found" });
+        return res.status(404).json({ error: "Employee not found" });
       }
     }
   });
@@ -149,10 +90,6 @@ router.get("/proforma/:id", (req, res) => {
 
 router.get("/tax/:id", (req, res) => {
   const { id } = req.params;
-  const getEmployeeByIdQuery = `
-      SELECT * FROM invoicedata WHERE customer_id = '${id}'
-    `;
-
   const getInvoiceByIdQuery = `
     SELECT *
     FROM invoicedata
@@ -162,12 +99,12 @@ router.get("/tax/:id", (req, res) => {
 
   pool.query(getInvoiceByIdQuery, (err, result) => {
     if (err) {
-      res.status(500).json({ error: "Error fetching employee data" });
+      return res.status(500).json({ error: "Error fetching employee data" });
     } else {
       if (result.length > 0) {
-        res.status(200).json(result[0]);
+        return res.status(200).json(result[0]);
       } else {
-        res.status(404).json({ error: "Employee not found" });
+        return res.status(404).json({ error: "Employee not found" });
       }
     }
   });

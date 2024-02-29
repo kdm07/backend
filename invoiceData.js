@@ -17,9 +17,9 @@ router.get("", (req, res) => {
     INNER JOIN customer ON invoicedata.customer_id = customer.id`,
     (err, results) => {
       if (err) {
-        res.status(500).json({ error: "Error fetching data" });
+        return res.status(500).json({ error: "Error fetching data" });
       } else {
-        res.status(200).json(results);
+        return res.status(200).json(results);
       }
     }
   );
@@ -100,9 +100,6 @@ router.put("/:id", upload.none(), async (req, res) => {
 
 router.get("/:id", (req, res) => {
   const { id } = req.params;
-  // const getEmployeeByIdQuery = `
-  //   SELECT * FROM invoicedata WHERE order_number = '${id}'
-  // `;
 
   const getInvoiceByIdQuery = `
   SELECT *
@@ -152,9 +149,6 @@ router.get("/update/:id", (req, res) => {
 
 router.get("/proforma/:id", (req, res) => {
   const { id } = req.params;
-  const getEmployeeByIdQuery = `
-    SELECT * FROM invoicedata WHERE customer_id = '${id}'
-  `;
 
   const getInvoiceByIdQuery = `
   SELECT *
@@ -165,12 +159,15 @@ router.get("/proforma/:id", (req, res) => {
 
   pool.query(getInvoiceByIdQuery, (err, result) => {
     if (err) {
-      res.status(500).json({ error: "Error fetching employee data" });
+      console.log(err);
+      return res.status(500).json({ error: "Error fetching employee data" });
     } else {
       if (result.length > 0) {
-        res.status(200).json(result[0]);
+        console.log(result);
+        return res.status(200).json(result[0]);
       } else {
-        res.status(404).json({ error: "Employee not found" });
+        console.log(result);
+        return res.status(404).json({ error: "Employee not found" });
       }
     }
   });
