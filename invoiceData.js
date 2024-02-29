@@ -225,7 +225,7 @@ function saveOrUpdateCustomer(req, res, id) {
 
   if (id === undefined) {
     sqlQuery = `
-      INSERT INTO invoiceData (
+      INSERT INTO invoicedata (
         customer_id,
         subject,
         project,
@@ -259,7 +259,7 @@ function saveOrUpdateCustomer(req, res, id) {
     ];
   } else {
     sqlQuery = `
-        UPDATE invoiceData
+        UPDATE invoicedata
         SET
         customer_id = ? ,
         subject= ?,

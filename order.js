@@ -176,38 +176,36 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
 
   const queryValues = id
     ? [
-        order_id,
-        project_name,
-        subject,
-        letterPath,
-        additional_info,
-        discount,
-        transport_fee,
-        due_date,
-        new Date(),
-        customer_id,
-        PENDING_FOR_REVIEW,
-        order_number,
-        parentRef,
-        hqletter,
-      ]
+      order_id,
+      project_name,
+      subject,
+      letterPath,
+      additional_info,
+      discount,
+      transport_fee,
+      due_date,
+      new Date(),
+      customer_id,
+      PENDING_FOR_REVIEW,
+      order_number,
+      parentRef, hqletter
+    ]
     : [
-        order_id,
-        project_name,
-        subject,
-        letterPath,
-        additional_info,
-        discount,
-        transport_fee,
-        due_date,
-        new Date(),
-        customer_id,
-        "PENDING_FOR_REVIEW",
+      order_id,
+      project_name,
+      subject,
+      letterPath,
+      additional_info,
+      discount,
+      transport_fee,
+      due_date,
+      new Date(),
+      customer_id,
+      "PENDING_FOR_REVIEW",
 
-        order_number,
-        parentRef,
-        hqletter,
-      ];
+      order_number,
+      parentRef, hqletter
+    ];
 
   return await util
     .promisify(connection.query)
