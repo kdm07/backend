@@ -98,8 +98,9 @@ router.put("/:id", upload.none(), async (req, res) => {
 //   }
 // });
 
-router.get("/:id", (req, res) => {
+router.get("/need/:id", (req, res) => {
   const { id } = req.params;
+  console.log('triggerred')
 
   const getInvoiceByIdQuery = `
   SELECT *
@@ -121,11 +122,43 @@ router.get("/:id", (req, res) => {
   });
 });
 
+router.get("/get-order-invoice/:id", (req, res) => {
+  const { id } = req.params;
+  const getInvoiceByIdQuery = `
+    SELECT *
+    FROM invoicedata
+    INNER JOIN customer ON invoicedata.customer_id = customer.id
+    WHERE invoicedata.order_number LIKE '%/${id}';
+  `;
+
+  //   const getInvoiceByIdQuery = `
+  //   SELECT *
+  //   FROM invoicedata
+  //   INNER JOIN customer ON invoicedata.customer_id = customer.id
+  //   WHERE RIGHT(invoicedata.order_number, CHARINDEX('/', REVERSE(invoicedata.order_number)) - 1) = '${id}'
+  //     AND invoicedata.order_number LIKE '%/${id}';
+  // `;
+
+
+  pool.query(getInvoiceByIdQuery, (err, result) => {
+    if (err) {
+      res.status(500).json({ error: "Error fetching employee data" });
+    } else {
+      if (result.length > 0) {
+        res.status(200).json(result[0]);
+      } else {
+        res.status(404).json({ error: "Employee not found" });
+      }
+    }
+  });
+});
+
 router.get("/update/:id", (req, res) => {
   const { id } = req.params;
   // const getEmployeeByIdQuery = `
   //   SELECT * FROM invoicedata WHERE order_number = '${id}'
   // `;
+
 
   const getInvoiceByIdQuery = `
   SELECT *
