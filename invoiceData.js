@@ -13,8 +13,8 @@ const upload = multer({ storage: storage });
 router.get("", (req, res) => {
   pool.query(
     `SELECT *
-    FROM invoicedata
-    INNER JOIN customer ON invoicedata.customer_id = customer.id`,
+    FROM invoiceData
+    INNER JOIN customer ON invoiceData.customer_id = customer.id`,
     (err, results) => {
       if (err) {
         return res.status(500).json({ error: "Error fetching data" });
@@ -26,13 +26,13 @@ router.get("", (req, res) => {
 });
 
 router.put("/:id", upload.none(), async (req, res) => {
-  console.log("hhh");
+  // console.log("hhh");
 
   try {
     const { val, date } = req.body;
     const { id } = req.params;
 
-    const updateQuery = `update invoicedata set tax_conversion = ?, tax_number = ?, tax_invoice_date = ? where invoice_number = '${id.toString()}'`;
+    const updateQuery = `update invoiceData set tax_conversion = ?, tax_number = ?, tax_invoice_date = ? where invoice_number = '${id.toString()}'`;
 
     pool.query(updateQuery, [1, val, date.toString()], (err, success) => {
       if (err) {
@@ -55,7 +55,7 @@ router.put("/:id", upload.none(), async (req, res) => {
 //     const { invoiceNumber } = req.params;
 //     console.log(invoiceNumber)
 
-//     const getEmployeeByIdQuery = `SELECT * FROM invoicedata WHERE invoice_number = '${invoiceNumber}'`;
+//     const getEmployeeByIdQuery = `SELECT * FROM invoiceData WHERE invoice_number = '${invoiceNumber}'`;
 
 //     const result = pool.query(getEmployeeByIdQuery, (err, result) => {
 //       if (err) {
@@ -74,7 +74,7 @@ router.put("/:id", upload.none(), async (req, res) => {
 //           // order.tax_number = need.toString();
 
 //           const updateOrderQuery = `
-//             UPDATE invoicedata
+//             UPDATE invoiceData
 //             SET tax_conversion = ${order.tax_conversion}, tax_number = ${order.tax_number}
 //             WHERE order_number = '${order.order_number}'
 //           `;
@@ -104,9 +104,9 @@ router.get("/need/:id", (req, res) => {
 
   const getInvoiceByIdQuery = `
   SELECT *
-  FROM invoicedata
-  INNER JOIN customer ON invoicedata.customer_id = customer.id
-  WHERE invoicedata.order_number = '${id}';
+  FROM invoiceData
+  INNER JOIN customer ON invoiceData.customer_id = customer.id
+  WHERE invoiceData.order_number = '${id}';
 `;
 
   pool.query(getInvoiceByIdQuery, (err, result) => {
@@ -156,15 +156,15 @@ router.get("/get-order-invoice/:id", (req, res) => {
 router.get("/update/:id", (req, res) => {
   const { id } = req.params;
   // const getEmployeeByIdQuery = `
-  //   SELECT * FROM invoicedata WHERE order_number = '${id}'
+  //   SELECT * FROM invoiceData WHERE order_number = '${id}'
   // `;
 
 
   const getInvoiceByIdQuery = `
   SELECT *
-  FROM invoicedata
-  INNER JOIN customer ON invoicedata.customer_id = customer.id
-  WHERE invoicedata.invoice_number = '${id}';
+  FROM invoiceData
+  INNER JOIN customer ON invoiceData.customer_id = customer.id
+  WHERE invoiceData.invoice_number = '${id}';
 `;
 
   pool.query(getInvoiceByIdQuery, (err, result) => {
@@ -185,9 +185,9 @@ router.get("/proforma/:id", (req, res) => {
 
   const getInvoiceByIdQuery = `
   SELECT *
-  FROM invoicedata
-  INNER JOIN customer ON invoicedata.customer_id = customer.id
-  WHERE invoicedata.invoice_number = '${id}';
+  FROM invoiceData
+  INNER JOIN customer ON invoiceData.customer_id = customer.id
+  WHERE invoiceData.invoice_number = '${id}';
 `;
 
   pool.query(getInvoiceByIdQuery, (err, result) => {
@@ -209,14 +209,14 @@ router.get("/proforma/:id", (req, res) => {
 router.get("/tax/:id", (req, res) => {
   const { id } = req.params;
   const getEmployeeByIdQuery = `
-      SELECT * FROM invoicedata WHERE customer_id = '${id}'
+      SELECT * FROM invoiceData WHERE customer_id = '${id}'
     `;
 
   const getInvoiceByIdQuery = `
     SELECT *
-    FROM invoicedata
-    INNER JOIN customer ON invoicedata.customer_id = customer.id
-    WHERE invoicedata.invoice_number = '${id}';
+    FROM invoiceData
+    INNER JOIN customer ON invoiceData.customer_id = customer.id
+    WHERE invoiceData.invoice_number = '${id}';
   `;
 
   pool.query(getInvoiceByIdQuery, (err, result) => {
@@ -328,6 +328,7 @@ function saveOrUpdateCustomer(req, res, id) {
   pool.query(sqlQuery, queryValues, (err, result) => {
     if (err) {
       console.log(err);
+
       res.status(500).json({ error_msg: "Internal server error" });
     } else {
       if (id) {
