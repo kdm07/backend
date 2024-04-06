@@ -21,9 +21,9 @@ const { createPool } = require("mysql");
 const pool = createPool({
   user: "root",
   host: "127.0.0.1",
-  password: "keka@3061",
+  password: "uday0403",
   connectionLimit: 10,
-  database: "lims",
+  database: "need",
 });
 
 module.exports = pool;

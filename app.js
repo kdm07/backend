@@ -9,14 +9,14 @@ require("dotenv").config();
 const port = process.env.PORT;
 
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   res.header("Access-Control-Allow-Credentials", true);
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
 
-// app.use(cors());
+app.use(cors());
 
 const employeeRoutes = require("./employee");
 // const roles = require("./roles");
@@ -30,6 +30,7 @@ const jobs = require("./jobs");
 const role = require("./roles");
 const random = require("./random");
 const invoice = require("./invoiceData");
+const dates = require('./dates')
 
 app.use("/employee", employeeRoutes);
 app.use("/customer", customerRoutes);
@@ -42,6 +43,7 @@ app.use("/jobs", jobs);
 app.use("/role", role);
 app.use("/random", random);
 app.use("/invoice", invoice);
+app.use("/dates", dates)
 // app.use("/roles", roles);
 
 app.listen(port, () => {
