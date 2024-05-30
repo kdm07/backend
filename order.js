@@ -121,7 +121,7 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
     transport_fee,
     due_date,
     customer_id,
-    order_number, branch,
+    order_number, branch, addOn,
     PENDING_FOR_REVIEW,
   } = orderData;
 
@@ -156,7 +156,7 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
         additional_info = ?,
         customer_id = ?,
         parent_ref = ?,
-        hqletter = ?,branch=?
+        hqletter = ?,branch=?,additional_sample_data=?
       WHERE order_id = ?`
     : `INSERT INTO orders (
       order_id,
@@ -171,8 +171,8 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
       customer_id,
       status,
       order_number,
-      parent_ref, hqletter,branch
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?)`;
+      parent_ref, hqletter,branch,additional_sample_data
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?)`;
 
   const queryValues = id
     ? [
@@ -188,7 +188,7 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
       customer_id,
       PENDING_FOR_REVIEW,
       order_number,
-      parentRef, hqletter, branch
+      parentRef, hqletter, branch, addOn
     ]
     : [
       order_id,
@@ -204,7 +204,7 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
       "PENDING_FOR_REVIEW",
 
       order_number,
-      parentRef, hqletter, branch
+      parentRef, hqletter, branch, addOn
     ];
 
   return await util
@@ -214,6 +214,7 @@ async function insertOrUpdateOrder(connection, orderData, file, id) {
 
 async function insertOrUpdateMaterials(connection, orderData, orderId) {
   const materials = JSON.parse(orderData.testData);
+
   const materialResults = [];
   for (const material of materials) {
     const {
@@ -229,7 +230,9 @@ async function insertOrUpdateMaterials(connection, orderData, orderId) {
       siteName,
       weekNo,
       grade,
+
     } = material;
+    // console.log(additionalFields, 'add on')
     const sqlQuery =
       "INSERT INTO order_material (order_id, sample_id, subgroup,source,quantity,job_number,brand_name,ref_code,sample_number,site_name,week_number,grade) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
     const queryValues = [
@@ -244,7 +247,7 @@ async function insertOrUpdateMaterials(connection, orderData, orderId) {
       sampleNum,
       siteName,
       weekNo,
-      grade,
+      grade
     ];
 
     const result = await util

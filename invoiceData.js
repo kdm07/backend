@@ -218,7 +218,7 @@ router.get("/tax/:id", (req, res) => {
     INNER JOIN customer ON invoiceData.customer_id = customer.id
     WHERE invoiceData.invoice_number = '${id}';
   `;
-
+  s
   pool.query(getInvoiceByIdQuery, (err, result) => {
     if (err) {
       res.status(500).json({ error: "Error fetching employee data" });
