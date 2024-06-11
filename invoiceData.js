@@ -47,6 +47,30 @@ router.put("/:id", upload.none(), async (req, res) => {
   }
 });
 
+// router.put("/mergingtax", upload.none(), async (req, res) => {
+//   console.log("hhhkio");
+
+//   try {
+//     const { val, date, invoieNumberList } = req.body;
+//     const invoiceNumbers = JSON.parse(invoieNumberList);
+//     console.log(invoiceNumbers, 'invoiceNumbers')
+
+
+//     const updateMultiQuery = `update invoicedata set tax_conversion = ?, tax_number = ?, tax_invoice_date = ? where invoice_number IN (?)`;
+
+//     pool.query(updateMultiQuery, [1, val, date.toString(), invoiceNumbers], (err, success) => {
+//       if (err) {
+//         console.log(err);
+//       } else {
+//         console.log(success);
+//         return res.status(200).send({ message: "updated Successfully" });
+//       }
+//     });
+//   } catch (err) {
+//     console.log(err);
+//   }
+// });
+
 // router.put('/:invoiceNumber', upload.none(), async (req, res) => {
 //   console.log('hhh')
 //   // const { val } = req.body;
@@ -212,19 +236,53 @@ router.get("/tax/:id", (req, res) => {
       SELECT * FROM invoiceData WHERE customer_id = '${id}'
     `;
 
+  // const getInvoiceByIdQuery = `
+  //   SELECT *
+  //   FROM invoiceData
+  //   INNER JOIN customer ON invoiceData.customer_id = customer.id
+  //   WHERE invoiceData.invoice_number = '${id}';
+  // `;
+
   const getInvoiceByIdQuery = `
     SELECT *
     FROM invoiceData
     INNER JOIN customer ON invoiceData.customer_id = customer.id
-    WHERE invoiceData.invoice_number = '${id}';
+    WHERE invoiceData.tax_number = '${id}';
   `;
-  s
+
   pool.query(getInvoiceByIdQuery, (err, result) => {
     if (err) {
       res.status(500).json({ error: "Error fetching employee data" });
     } else {
       if (result.length > 0) {
         res.status(200).json(result[0]);
+      } else {
+        res.status(404).json({ error: "Employee not found" });
+      }
+    }
+  });
+});
+
+router.get("/taxes/:id", (req, res) => {
+  const { id } = req.params;
+  const getEmployeeByIdQuery = `
+      SELECT * FROM invoiceData WHERE customer_id = '${id}'
+    `;
+
+  const getInvoiceByIdQuery = `
+    SELECT *
+    FROM invoiceData
+    INNER JOIN customer ON invoiceData.customer_id = customer.id
+    WHERE invoiceData.tax_number = '${id}';
+  `;
+
+  pool.query(getInvoiceByIdQuery, (err, result) => {
+    if (err) {
+      res.status(500).json({ error: "Error fetching employee data" });
+    } else {
+      if (result.length > 0) {
+        console.log(result, 'backend data')
+        res.status(200).json(result);
       } else {
         res.status(404).json({ error: "Employee not found" });
       }

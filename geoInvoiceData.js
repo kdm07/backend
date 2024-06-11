@@ -22,6 +22,31 @@ router.get("", (req, res) => {
   });
 });
 
+router.put("/mergingtax", upload.none(), async (req, res) => {
+  // console.log("hhhkio");
+
+  try {
+    const { val, date, invoieNumberList } = req.body;
+    const invoiceNumbers = JSON.parse(invoieNumberList);
+    console.log(val, 'updated tax invoice numbersssss')
+    console.log(invoiceNumbers, 'invoiceNumbers')
+
+
+    const updateMultiQuery = `update invoicedata set tax_conversion = ?, tax_number = ?, tax_invoice_date = ? where invoice_number IN (?)`;
+
+    pool.query(updateMultiQuery, [1, val, date.toString(), invoiceNumbers], (err, success) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(success);
+        return res.status(200).send({ message: "updated Successfully" });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 router.put("/:id", upload.none(), async (req, res) => {
   console.log("hhh");
 
